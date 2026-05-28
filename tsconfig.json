@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "esnext",        
+    "module": "CommonJS",      
+    "rootDir": "./src",      
+    "outDir": "./dist",     
+    "strict": true,         
+    "esModuleInterop": true,   
+    "skipLibCheck": true      
+  },
+  "exclude": ["node_modules", "dist", "prisma.config.ts"]  // pastas e arquivos que o TypeScript ignora
+}
