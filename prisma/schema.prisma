@@ -1,13 +1,63 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TiposUsuario {
+  CLIENTE
+  BARBEIRO
+  ADMIN
+}
+
+model Usuario {
+  id        String       @id @default(cuid())
+  usuario   String
+  email     String       @unique
+  senha     String
+  role      TiposUsuario @default(CLIENTE)
+
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  agendamentosComoCliente  Agendamento[] @relation("ClienteAgendamentos")
+  agendamentosComoBarbeiro Agendamento[] @relation("BarbeiroAgendamentos")
+}
+
+model Servico {
+  id        String   @id @default(cuid())
+  nome      String
+  preco     Float
+  duracao   Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agendamentos Agendamento[]
+}
+
+model Agendamento {
+  id         String       @id @default(cuid())
+  data       DateTime
+  status     String
+
+  usuarioId  String
+  barbeiroId String
+  servicoId  String
+
+  usuario  Usuario @relation("ClienteAgendamentos", fields: [usuarioId], references: [id])
+  barbeiro Usuario @relation("BarbeiroAgendamentos", fields: [barbeiroId], references: [id])
+  servico  Servico @relation(fields: [servicoId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
