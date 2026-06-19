@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const auth_1 = require("../controllers/auth");
+const auth_2 = require("../middlewares/auth");
+const rotasUsuario = (0, express_1.Router)();
+rotasUsuario.post("/registro", auth_1.registrar);
+rotasUsuario.post("/login", auth_1.logar);
+rotasUsuario.get("/mostrarPerfil", auth_2.auth, auth_1.mostrarPerfil);
+exports.default = rotasUsuario;

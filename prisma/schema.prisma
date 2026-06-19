@@ -24,7 +24,7 @@ model Usuario {
   usuario   String
   email     String       @unique
   senha     String
-  role      TiposUsuario @default(CLIENTE)
+  tipo      TiposUsuario @default(CLIENTE)
 
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
