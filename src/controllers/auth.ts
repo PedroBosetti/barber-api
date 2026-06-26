@@ -35,8 +35,8 @@ export async function logar (req: Request, res: Response) {
 
         const senhaValida = await bcrypt.compare(senha, usuario.senha)
         if(!senhaValida) return res.status(401).json({erro: 'Senha incorreta'})
-
         const token = jwt.sign({ id: usuario.id }, process.env.SEGREDO!, {expiresIn: '7d'})
+
         const {senha: _, ...usuarioSemSenha} = usuario
         return res.status(200).json({
             usuario: usuarioSemSenha,

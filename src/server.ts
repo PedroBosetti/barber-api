@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 
 import rotasUsuario from './routes/auth'
 import rotasServico from './routes/servico'
+import rotasAgendamento from './routes/agendamentos'
 
 
 const app = express()
@@ -13,6 +14,7 @@ app.use(cors())
 
 app.use("/auth", rotasUsuario)
 app.use('/servico', rotasServico)
+app.use('/agendamento', rotasAgendamento)
 
 app.listen(3000, () => {
     console.log('Server rodando na porta 3000')
