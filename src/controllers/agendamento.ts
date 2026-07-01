@@ -1,11 +1,13 @@
 import prisma from "../lib/prisma";
 import { Request, Response } from "express";
+import { agendamentoSchema, reagendarSchema } from '../schemas/agendamento';
 
-export async function criarAgendamento(req: Request, res:Response) {
+export async function criarAgendamento(req: Request, res: Response) {
     try {
-        const {barbeiroId, servicoId, data} = req.body
-        if(!barbeiroId || !servicoId || !data) return res.status(400).json({erro: 'Falta preencher informações para concluir o agendamento'})
-        
+        const validacao = agendamentoSchema.safeParse(req.body)
+        if(!validacao.success) return res.status(400).json({ erro: validacao.error.issues })
+        const { barbeiroId, servicoId, data } = validacao.data
+
         const novoAgendamento = await prisma.agendamento.create({
             data: {
                 usuarioId: req.usuarioId!,
@@ -15,59 +17,61 @@ export async function criarAgendamento(req: Request, res:Response) {
                 status: 'PENDENTE'
             }
         })
-        return res.status(201).json({novoAgendamento})
+        return res.status(201).json(novoAgendamento)
     } catch(erro) {
-        return res.status(500).json({erro: 'Não foi possível criar agendamento'})
+        return res.status(500).json({ erro: 'Não foi possível criar agendamento' })
     }
 }
 
 export async function listarAgendamentosEnviados(req: Request, res: Response) {
     try {
         const agendamentos = await prisma.agendamento.findMany({
-            where: {usuarioId: req.usuarioId}
+            where: { usuarioId: req.usuarioId }
         })
-        if(agendamentos.length === 0) return res.status(404).json({erro: 'Não há agendamentos para este usuário'})
+        if(agendamentos.length === 0) return res.status(404).json({ erro: 'Não há agendamentos para este usuário' })
         return res.status(200).json(agendamentos)
     } catch(erro) {
-        return res.status(500).json({erro: 'Não foi possível encontrar agendamentos'})
+        return res.status(500).json({ erro: 'Não foi possível encontrar agendamentos' })
     }
 }
 
 export async function listarAgendamentosRecebidos(req: Request, res: Response) {
     try {
-        console.log('barbeiroId buscado:', req.usuarioId)
         const agendamentos = await prisma.agendamento.findMany({
-            where: {barbeiroId: req.usuarioId}
+            where: { barbeiroId: req.usuarioId }
         })
-        if(agendamentos.length === 0) return res.status(404).json({erro: 'Não há agendamentos para este Barbeiro'})
+        if(agendamentos.length === 0) return res.status(404).json({ erro: 'Não há agendamentos para este Barbeiro' })
         return res.status(200).json(agendamentos)
     } catch(erro) {
-        return res.status(500).json({erro: 'Não foi possível encontrar agendamentos'})
+        return res.status(500).json({ erro: 'Não foi possível encontrar agendamentos' })
     }
 }
 
 export async function reagendar(req: Request, res: Response) {
     try {
-        const {id} = req.params as {id: string}
-        const {barbeiroId, servicoId, data} = req.body
+        const { id } = req.params as { id: string }
+        const validacao = reagendarSchema.safeParse(req.body)
+        if(!validacao.success) return res.status(400).json({ erro: validacao.error.issues })
+        const { barbeiroId, servicoId, data } = validacao.data
+
         const agendamento = await prisma.agendamento.update({
             where: { id },
-            data: {barbeiroId, servicoId, data}
+            data: { barbeiroId, servicoId, data }
         })
         return res.status(200).json(agendamento)
     } catch(erro) {
-        return res.status(500).json({erro: 'Não foi possível editar este agendamento'})
+        return res.status(500).json({ erro: 'Não foi possível editar este agendamento' })
     }
 }
 
 export async function desmarcar(req: Request, res: Response) {
     try {
-        const {id} = req.params as {id: string}
+        const { id } = req.params as { id: string }
         await prisma.agendamento.delete({
-            where: {id}
+            where: { id }
         })
-        return res.status(204).json()
+        return res.status(204).send()
     } catch(erro) {
-        return res.status(500).json({erro: 'Não foi possível desmarcar o agendamento'})
+        return res.status(500).json({ erro: 'Não foi possível desmarcar o agendamento' })
     }
 }

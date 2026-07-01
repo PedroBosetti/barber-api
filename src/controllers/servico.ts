@@ -1,10 +1,12 @@
 import prisma from "../lib/prisma";
 import { Request, Response } from "express";
+import { servicoSchema, editarServicoSchema } from "../schemas/servico";
 
 export async function criarServico(req: Request, res: Response ) {
     try {
-        const {nome, preco, duracao} = req.body
-        if(!nome || !preco || !duracao) return res.status(400).json({erro: 'Campos obrigatórios faltando'})
+        const validacao = servicoSchema.safeParse(req.body)
+        if(!validacao.success) return res.status(400).json({ erro: validacao.error.issues })
+        const { nome, preco, duracao } = validacao.data
         const novoServico = await prisma.servico.create({
             data: {
                 nome,
@@ -18,20 +20,21 @@ export async function criarServico(req: Request, res: Response ) {
     }
 }
 
-export async function editarServico(req: Request, res:Response) {
+export async function editarServico(req: Request, res: Response) {
     try {
-        const { id } = req.params as { id: string}
-        const {nome, preco, duracao} = req.body
+        const { id } = req.params as { id: string }
+        const validacao = editarServicoSchema.safeParse(req.body)
+        if(!validacao.success) return res.status(400).json({ erro: validacao.error.issues })
+        const { nome, preco, duracao } = validacao.data
+
         const servico = await prisma.servico.update({
-            where: {id},
-            data: {nome, preco, duracao}
+            where: { id },
+            data: { nome, preco, duracao }
         })
         return res.status(200).json(servico)
-    } catch (erro) {
-            console.error(erro)
+    } catch(erro) {
         return res.status(500).json({ erro: "Erro ao editar serviço" })
     }
-    
 }
 
 export async function listarServicos(req: Request, res: Response) {
