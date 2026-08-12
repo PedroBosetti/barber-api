@@ -17,6 +17,11 @@ export async function criarAgendamento(req: Request, res: Response) {
                 status: 'PENDENTE'
             }
         })
+        const conflito = await prisma.agendamento.findFirst({
+        where: { barbeiroId, data }
+        })
+        if(conflito) return res.status(409).json({ erro: 'Barbeiro já tem agendamento nesse horário' })
+            
         return res.status(201).json(novoAgendamento)
     } catch(erro) {
         return res.status(500).json({ erro: 'Não foi possível criar agendamento' })
