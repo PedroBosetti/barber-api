@@ -7,6 +7,11 @@ export async function criarAgendamento(req: Request, res: Response) {
         const validacao = agendamentoSchema.safeParse(req.body)
         if(!validacao.success) return res.status(400).json({ erro: validacao.error.issues })
         const { barbeiroId, servicoId, data } = validacao.data
+    
+    const conflito = await prisma.agendamento.findFirst({
+    where: { barbeiroId, data }
+    })
+    if(conflito) return res.status(409).json({ erro: 'Barbeiro já tem agendamento nesse horário' })
 
         const novoAgendamento = await prisma.agendamento.create({
             data: {
@@ -17,16 +22,12 @@ export async function criarAgendamento(req: Request, res: Response) {
                 status: 'PENDENTE'
             }
         })
-        const conflito = await prisma.agendamento.findFirst({
-        where: { barbeiroId, data }
-        })
-        if(conflito) return res.status(409).json({ erro: 'Barbeiro já tem agendamento nesse horário' })
             
         return res.status(201).json(novoAgendamento)
-    } catch(erro) {
-        return res.status(500).json({ erro: 'Não foi possível criar agendamento' })
+        } catch(erro) {
+            return res.status(500).json({ erro: 'Não foi possível criar agendamento' })
+        }
     }
-}
 
 export async function listarAgendamentosEnviados(req: Request, res: Response) {
     try {
